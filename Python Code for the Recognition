@@ -1,0 +1,338 @@
+!pip install nlp
+
+# %matplotlib inline
+
+import tensorflow as tf
+import numpy as np
+import matplotlib.pyplot as plt
+import nlp
+import random
+
+
+def show_history(h):
+    epochs_trained = len(h.history['loss'])
+    plt.figure(figsize=(16, 6))
+
+    plt.subplot(1, 2, 1)
+    plt.plot(range(0, epochs_trained), h.history.get('accuracy'), label='Training')
+    plt.plot(range(0, epochs_trained), h.history.get('val_accuracy'), label='Validation')
+    plt.ylim([0., 1.])
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+
+    plt.subplot(1, 2, 2)
+    plt.plot(range(0, epochs_trained), h.history.get('loss'), label='Training')
+    plt.plot(range(0, epochs_trained), h.history.get('val_loss'), label='Validation')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    plt.show()
+
+
+def show_confusion_matrix(y_true, y_pred, classes):
+    from sklearn.metrics import confusion_matrix
+
+    cm = confusion_matrix(y_true, y_pred, normalize='true')
+
+    plt.figure(figsize=(8, 8))
+    sp = plt.subplot(1, 1, 1)
+    ctx = sp.matshow(cm)
+    plt.xticks(list(range(0, 6)), labels=classes)
+    plt.yticks(list(range(0, 6)), labels=classes)
+    plt.colorbar(ctx)
+    plt.show()
+
+
+print('Using TensorFlow version', tf.__version__)
+
+"""## Task 3: Importing Data
+
+1. Importing the Tweet Emotion dataset
+2. Creating train, validation and test sets
+3. Extracting tweets and labels from the examples
+"""
+
+import pandas as pd
+
+import pandas as pd
+
+# Load the dataset
+file_path = '/content/test.csv' 
+df = pd.read_csv('/content/test.csv')
+
+print("Dataset loaded successfully!")
+print("Shape of the dataset:", df.shape)
+print("First 5 entries:")
+print(df.head())
+print("Dataset loaded successfully!")
+print("Shape of the dataset:", df.shape)
+print("First 5 entries:")
+print(df.head())
+
+emotion_map = {
+    0: "joy",
+    1: "sadness",
+    2: "fear",
+    3: "anger",
+    4: "surprise",
+    5: "love"
+}
+
+nlp.dataset_dict
+
+# config.py
+DATA_PATH = '/content/test.csv'
+
+import pandas as pd
+
+file_path = '/content/test.csv'
+
+try:
+    df_train = pd.read_csv(file_path)
+    print("Training Dataset loaded successfully!")
+    print("Shape of the training dataset:", df_train.shape)
+    print("First 5 entries of the training dataset:")
+    print(df_train.head())
+
+    # Extract tweets and labels
+    train_tweets = df_train['text']
+    train_labels = df_train['label']
+
+    print("\nTraining tweets and labels extracted successfully.")
+    print("First 5 training tweets:")
+    print(train_tweets.head())
+    print("\nFirst 5 training labels:")
+    print(train_labels.head())
+
+except FileNotFoundError:
+    print(f"Error: The file '{file_path}' was not found. Please ensure the file exists.")
+except KeyError as e:
+    print(f"Error: Column '{e}' not found in the training dataset. Please check the column names in your file.")
+
+print("Columns in the dataset:", df.columns.tolist())
+print("First 5 rows:")
+print(df.head())
+
+val_set, test_set = train_test_split(df, test_size=0.5, random_state=42)
+
+val_set = val_set.reset_index(drop=True)
+test_set = test_set.reset_index(drop=True)
+
+print("Validation set size:", val_set.shape)
+print("Test set size:", test_set.shape)
+print("Columns in the dataset:", df.columns.tolist())
+print("First 5 rows:")
+print(df.head())
+
+val_set, test_set = train_test_split(df, test_size=0.5, random_state=42)
+
+val_set = val_set.reset_index(drop=True)
+test_set = test_set.reset_index(drop=True)
+
+print("Validation set size:", val_set.shape)
+print("Test set size:", test_set.shape)
+
+X_val = val_set['text']
+y_val = val_set['label']
+
+X_test = test_set['text']
+y_test = test_set['label']
+
+labels = df['label']
+
+print("Extracted labels:")
+print(labels.head())
+labels = df['label']
+
+print("Extracted labels:")
+print(labels.head())
+
+tweets = df['text']
+labels = df['label']
+
+for tweet, label in zip(tweets.head(), labels.head()):
+    print(f"Tweet: {tweet} | Label: {label}")
+
+tweets = df['text']
+labels = df['label']
+
+for tweet, label in zip(tweets.head(), labels.head()):
+    print(f"Tweet: {tweet} | Label: {label}")
+
+train_set, val_set = train_test_split(df, test_size=0.2, random_state=42)
+
+train_tweets = train_set['text']
+train_labels = train_set['label']
+
+for tweet, label in zip(train_tweets.head(), train_labels.head()):
+    print(f"Tweet: {tweet} | Label: {label}")
+
+train_set, val_set = train_test_split(df, test_size=0.2, random_state=42)
+
+train_tweets = train_set['text']
+train_labels = train_set['label']
+
+first_tweet = train_tweets.iloc[0]
+first_label = train_labels.iloc[0]
+
+print("First Tweet:", first_tweet)
+print("Label:", first_label)
+
+"""## Task 4: Tokenizer
+
+1. Tokenizing the tweets
+"""
+
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+
+tokenizer = Tokenizer(num_words=10000, oov_token='<UNK>')
+tokenizer.fit_on_texts(train_tweets)
+
+tokenizer.texts_to_sequences(["i wish i could bottle her squeals of delight and take them out whenever im feeling grumpy"])
+
+"""## Task 5: Padding and Truncating Sequences
+
+1. Checking length of the tweets
+2. Creating padded sequences
+"""
+
+lengths = [len(t.split(' ')) for t in train_tweets]
+plt.hist(lengths, bins=len(set(lengths)))
+plt.show()
+
+maxlen = 50
+
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+
+def get_sequences(tokenizer, tweets):
+    sequences = tokenizer.texts_to_sequences(tweets)
+    padded_sequences = pad_sequences(sequences, truncating='post', padding='post', maxlen=maxlen)
+    return padded_sequences
+
+padded_train_seq = get_sequences(tokenizer, train_tweets)
+padded_val_seq = get_sequences(tokenizer, val_set['text'])
+padded_test_seq = get_sequences(tokenizer, test_set['text'])
+
+padded_train_seq[0]
+
+"""## Task 6: Preparing the Labels
+
+1. Creating classes to index and index to classes dictionaries
+2. Converting text labels to numeric labels
+"""
+
+classes= sorted(set(train_set['label']))
+print(classes)
+
+plt.hist(train_set['label'])
+plt.show()
+
+classes_to_index = dict((c, i) for i, c in enumerate(classes))
+index_to_classes = dict((v, k) for k, v in classes_to_index.items())
+
+classes_to_index
+
+index_to_classes
+
+names_to_ids = {k:v for k,v in enumerate(classes)}
+
+train_labels = [classes_to_index.get(x) for x in train_set['label']]
+val_labels = [classes_to_index.get(x) for x in val_set['label']]
+test_labels = [classes_to_index.get(x) for x in test_set['label']]
+print(train_labels[2])
+
+"""## Task 7: Creating the Model
+
+1. Creating the model
+2. Compiling the model
+"""
+
+model = tf.keras.models.Sequential([
+    # Remove maxlen from the Embedding layer
+    tf.keras.layers.Embedding(10000, 16),
+    tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(20, return_sequences=True)),
+    tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(10)),
+    tf.keras.layers.Dense(6, activation='softmax')
+])
+
+model.compile(
+    loss='sparse_categorical_crossentropy',
+    optimizer='adam',
+    metrics=['accuracy']
+)
+
+import tensorflow as tf
+import numpy as np
+
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Embedding(10000, 16),
+    tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(20, return_sequences=True)),
+    tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(10)),
+    tf.keras.layers.Dense(6, activation='softmax')
+])
+
+dummy_input = np.zeros((1, 100))  # batch size 1, sequence length 100
+model(dummy_input)
+
+model.summary()
+
+"""## Task 8: Training the Model
+
+1. Preparing a validation set
+2. Training the model
+"""
+
+val_tweets = val_set['text']
+val_seq = get_sequences(tokenizer, val_tweets)
+val_labels = [classes_to_index.get(x) for x in val_set['label']]
+
+val_tweets.iloc[0], val_labels[0]
+
+model.compile(
+    loss='sparse_categorical_crossentropy',
+    optimizer='adam',
+    metrics=['accuracy']
+)
+h = model.fit(
+    padded_train_seq, np.array(train_labels),
+    validation_data=(padded_val_seq, np.array(val_labels)),
+    epochs=20,
+    callbacks=[
+        tf.keras.callbacks.EarlyStopping(monitor='val_accuracy', patience=2)
+    ]
+)
+
+"""## Task 9: Evaluating the Model
+
+1. Visualizing training history
+2. Prepraring a test set
+3. A look at individual predictions on the test set
+4. A look at all predictions on the test set
+"""
+
+show_history(h)
+
+test_tweets = test_set['text']
+test_seq = get_sequences(tokenizer, test_tweets)
+test_labels = [classes_to_index.get(x) for x in test_set['label']]
+
+_ = model.evaluate(test_seq, np.array(test_labels))
+
+print('Sentence:', test_tweets.iloc[i])
+print('Emotion:', index_to_classes[test_labels[i]])
+
+predictions = model.predict(np.expand_dims(test_seq[i], axis=0))
+p = np.argmax(predictions, axis=0)[0]
+
+print('Predicted Emotion:', index_to_classes[p])
+p = np.argmax(predictions, axis=1)[0]
+
+print('Predicted Emotion:', index_to_classes[p])
+
+preds = model.predict(test_seq)
+
+predicted_classes = np.argmax(preds, axis=1)
+
+show_confusion_matrix(test_labels, predicted_classes, list(classes_to_index.keys()))
