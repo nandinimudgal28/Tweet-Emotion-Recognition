@@ -16,7 +16,7 @@ The dataset provided (`test.csv`) contains pre-labeled tweets, and the model lea
 
 ---
 
-##Dataset
+## Dataset
 
 The dataset file `test.csv` includes:
 
@@ -40,7 +40,7 @@ Ensure this file is present in the working directory, or update the file path ac
 
 ---
 
-##Requirements
+## Requirements
 
 * Python 3.7+
 * TensorFlow 2.x
